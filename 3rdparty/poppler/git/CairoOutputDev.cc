@@ -161,7 +161,8 @@ CairoOutputDev::CairoOutputDev() {
 
   // the SA parameter supposedly defaults to false, but Acrobat
   // apparently hardwires it to true
-  stroke_adjust = globalParams->getStrokeAdjust();
+  // stroke_adjust = globalParams->getStrokeAdjust();
+  stroke_adjust = gFalse;
   align_stroke_coords = gFalse;
   adjusted_stroke_width = gFalse;
   xref = NULL;
@@ -2687,8 +2688,8 @@ void CairoOutputDev::setMimeData(Stream *str, Object *ref, cairo_surface_t *imag
   // colorspace in stream dict may be different from colorspace in jpx
   // data
   if (str->getKind() == strJPX) {
-    GBool hasColorSpace = !str->getDict()->lookup("ColorSpace", &obj)->isNull();
-    obj.free();
+    GBool hasColorSpace = !str->getDict()->lookup("ColorSpace").isNull();
+    obj.setToNull();
     if (hasColorSpace)
       return;
   }
