@@ -659,7 +659,8 @@ _render_type3_glyph (cairo_scaled_font_t  *scaled_font,
   output_dev->startDoc(info->doc, info->fontEngine);
   output_dev->startPage (1, gfx->getState(), gfx->getXRef());
   output_dev->setInType3Char(gTrue);
-  gfx->display(charProcs->getVal(glyph, &charProc));
+  Object obj = charProcs->getVal((int)glyph);
+  gfx->display(&obj);
 
   output_dev->getType3GlyphWidth (&wx, &wy);
   cairo_matrix_transform_distance (&matrix, &wx, &wy);
@@ -678,7 +679,7 @@ _render_type3_glyph (cairo_scaled_font_t  *scaled_font,
 
   delete gfx;
   delete output_dev;
-  charProc.free();
+  charProc.setToNull();
 
   return CAIRO_STATUS_SUCCESS;
 }
