@@ -66,10 +66,9 @@ string HTMLRenderer::dump_embedded_font (GfxFont * font, FontInfo & info)
 
         auto * id = font->getID();
 
-        Object ref_obj;
-        ref_obj.initRef(id->num, id->gen);
-        ref_obj.fetch(xref, &font_obj);
-        ref_obj.free();
+        Object ref_obj(id->num, id->gen);
+        font_obj = ref_obj.fetch(xref);
+        ref_obj.setToNull();
 
         if(!font_obj.isDict())
         {
@@ -78,7 +77,7 @@ string HTMLRenderer::dump_embedded_font (GfxFont * font, FontInfo & info)
         }
 
         Dict * dict = font_obj.getDict();
-        if(dict->lookup("DescendantFonts", &font_obj2)->isArray())
+        if(dict->lookup("DescendantFonts").isArray())
         {
             if(font_obj2.arrayGetLength() == 0)
             {
@@ -88,15 +87,14 @@ string HTMLRenderer::dump_embedded_font (GfxFont * font, FontInfo & info)
             {
                 if(font_obj2.arrayGetLength() > 1)
                     cerr << "TODO: multiple entries in DescendantFonts array" << endl;
-
-                if(font_obj2.arrayGet(0, &obj2)->isDict())
+                if(font_obj2.arrayGet(0).isDict())
                 {
-                    dict = obj2.getDict();
+                    dict = font_obj2.arrayGet(0).getDict();
                 }
             }
         }
-
-        if(!dict->lookup("FontDescriptor", &fontdesc_obj)->isDict())
+        fontdesc_obj = dict->lookup("FontDescriptor");
+        if(!fontdesc_obj.isDict())
         {
             cerr << "Cannot find FontDescriptor " << endl;
             throw 0;
@@ -104,9 +102,11 @@ string HTMLRenderer::dump_embedded_font (GfxFont * font, FontInfo & info)
 
         dict = fontdesc_obj.getDict();
 
-        if(dict->lookup("FontFile3", &obj)->isStream())
+        obj = dict->lookup("FontFile3");
+        if(obj.isStream())
         {
-            if(obj.streamGetDict()->lookup("Subtype", &obj1)->isName())
+            obj1 = obj.streamGetDict()->lookup("Subtype");
+            if(obj1.isName())
             {
                 subtype = obj1.getName();
                 if(subtype == "Type1C")
@@ -133,11 +133,11 @@ string HTMLRenderer::dump_embedded_font (GfxFont * font, FontInfo & info)
                 throw 0;
             }
         }
-        else if (dict->lookup("FontFile2", &obj)->isStream())
+        else if (dict->lookup("FontFile2").isStream())
         { 
             suffix = ".ttf";
         }
-        else if (dict->lookup("FontFile", &obj)->isStream())
+        else if (dict->lookup("FontFile").isStream())
         {
             suffix = ".pfa";
         }
@@ -175,13 +175,13 @@ string HTMLRenderer::dump_embedded_font (GfxFont * font, FontInfo & info)
         cerr << "Something wrong when trying to dump font " << hex << fn_id << dec << endl;
     }
 
-    obj2.free();
-    obj1.free();
-    obj.free();
+    obj2.setToNull();
+    obj1.setToNull();
+    obj.setToNull();
 
-    fontdesc_obj.free();
-    font_obj2.free();
-    font_obj.free();
+    fontdesc_obj.setToNull();
+    font_obj2.setToNull();
+    font_obj.setToNull();
 
     return filepath;
 }
