@@ -263,21 +263,19 @@ void CairoBackgroundRenderer::setMimeData(Stream *str, Object *ref, cairo_surfac
     //
     // In PDF, jpeg stream objects can also specify other color spaces like DeviceN and Separation,
     // It is also not safe to dump them directly.
-    Object obj;
-    str->getDict()->lookup("ColorSpace", &obj);
+    Object obj = str->getDict()->lookup("ColorSpace");
     if (!obj.isName() || (strcmp(obj.getName(), "DeviceRGB") && strcmp(obj.getName(), "DeviceGray")) )
     {
-        obj.free();
+        obj.setToNull();
         return;
     }
-    obj.free();
-    str->getDict()->lookup("Decode", &obj);
+    obj = str->getDict()->lookup("Decode");
     if (obj.isArray())
     {
-        obj.free();
+        obj.setToNull();
         return;
     }
-    obj.free();
+    obj.setToNull();
 
     int imgId = ref->getRef().num;
     auto uri = strdup((char*) html_renderer->str_fmt("o%d.jpg", imgId));
